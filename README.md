@@ -32,8 +32,9 @@
 # from Home
 
 ## Progress
-1. get the mac address of each esp32 boards
-
+1. got the mac address of each esp32 boards
+2. esp now protocol successful
+3. relay concept study
 
 ## Board info
 1. ESP32 MAC Address: A0:DD:6C:85:83:90
