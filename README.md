@@ -16,8 +16,19 @@
 3. trying link [esp-idf](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started/linux-macos-setup.html)
 4. turned to use VScode with idf extensions [vscode with idf](https://devdockr.tistory.com/2157?category=1074383)
 
+### aquiring MAC address from ESP32
+1. some codes did not worked, suspecting that should I initialize the MAC address
+2. Yes I had to initialize but not I manually assign the address. 
+3. initialize the wifi first, then get the mac address.
+4. the code is [this](sourcecodes/get_mac.ino)
+5. still I can set a custom MAC address but what for?
 
 # from Home
 
 ## Progress
 1. get the mac address of each esp32 boards
+
+
+## Board info
+1. ESP32 MAC Address: A0:DD:6C:85:83:90
+2. ESP32 MAC Address: A0:DD:6C:03:2E:30
