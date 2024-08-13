@@ -15,3 +15,9 @@
 2. Bus 001 Device 006: ID 1a86:7523
 3. trying link [esp-idf](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started/linux-macos-setup.html)
 4. turned to use VScode with idf extensions [vscode with idf](https://devdockr.tistory.com/2157?category=1074383)
+
+
+# from Home
+
+## Progress
+1. get the mac address of each esp32 boards
