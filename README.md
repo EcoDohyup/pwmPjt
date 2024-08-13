@@ -8,6 +8,8 @@
 ## Progress
 1. installed Arduino ide and related libraries for ESP-32 firmware
 2. installing usb connection between esp-32 and ubuntu 22.04 lts
+3. finished MAC address acquisition from esp board
+4. finished esp-now protocol check [codes folder](esp_now_ex)
 
 ## Hardships
 ### establishing USB connection on Ubuntu 22.04 lts
@@ -16,12 +18,16 @@
 3. trying link [esp-idf](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started/linux-macos-setup.html)
 4. turned to use VScode with idf extensions [vscode with idf](https://devdockr.tistory.com/2157?category=1074383)
 
-### aquiring MAC address from ESP32
+### finished - aquiring MAC address from ESP32
 1. some codes did not worked, suspecting that should I initialize the MAC address
 2. Yes I had to initialize but not I manually assign the address. 
 3. initialize the wifi first, then get the mac address.
 4. the code is [this](sourcecodes/get_mac.ino)
 5. still I can set a custom MAC address but what for?
+
+### lack of Relay knowledge
+1. [What is relay?](https://blog.naver.com/roboholic84/220460268471)
+2. maybe electromagnetic type?
 
 # from Home
 
