@@ -14,3 +14,4 @@
 1. tried lsusb to find the bus and the name of the esp32, which seems to be **QinHeng Electronics CH340 serial converter**.
 2. Bus 001 Device 006: ID 1a86:7523
 3. trying link [esp-idf](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started/linux-macos-setup.html)
+4. turned to use VScode with idf extensions [vscode with idf](https://devdockr.tistory.com/2157?category=1074383)
