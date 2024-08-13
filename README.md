@@ -29,6 +29,10 @@
 1. [What is relay?](https://blog.naver.com/roboholic84/220460268471)
 2. maybe electromagnetic type?
 
+### lack of motor driver
+1. [모터드라이버 구동 예시](https://blog.naver.com/roboholic84/220460268471)
+2. [모터드라이버 원리](https://www.devicemart.co.kr/goods_process/get_html_to_string?url=/data/category/category_tech/00150002/00150002.html)
+
 # from Home
 
 ## Progress
