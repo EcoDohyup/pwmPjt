@@ -35,7 +35,8 @@ void setup() {
   // Initialize ESP-NOW
   if (esp_now_init() != ESP_OK) {
     Serial.println("ESP-NOW initialization failed");
-    return;
+  } else {
+    Serial.println("ESP-NOW initialized");
   }
 
   // Register callback for receiving data
