@@ -1,38 +1,47 @@
-// 리시버 코드
 #include <WiFi.h>
 #include <esp_now.h>
 
-void OnDataRecv(const uint8_t *mac_addr, const uint8_t *incomingData, int len) {
-  String message = String((char *)incomingData);
-  Serial.print("Received message: ");
-  Serial.println(message);
 
-  if (message == "ON") {
-    // Code to turn the LED on
-    Serial.println("LED ON");
-  } else if (message == "OFF") {
-    // Code to turn the LED off
-    Serial.println("LED OFF");
+// Callback function to handle received data
+void OnDataRecv(const esp_now_recv_info_t *info, const uint8_t *data, int len) {
+  // Convert the received data to a string
+  String command = String((char*)data);
+
+  // Print received data for debugging
+  Serial.print("Received command: ");
+  Serial.println(command);
+
+  // Control the LED based on the received command
+  if (command == "ON") {
+    digitalWrite(LED_BUILTIN, HIGH); // Turn LED ON
+  } else if (command == "OFF") {
+    digitalWrite(LED_BUILTIN, LOW);  // Turn LED OFF
+  } else {
+    Serial.println("Unknown command");
   }
 }
 
 void setup() {
   Serial.begin(115200);
 
-  // Initialize WiFi
+  // Initialize LED pin
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, LOW); // Ensure LED is off initially
+
+  // Set Wi-Fi to station mode and disconnect from any previous connections
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
-  delay(1000);
 
   // Initialize ESP-NOW
   if (esp_now_init() != ESP_OK) {
-    Serial.println("ESP-NOW initialization failed.");
+    Serial.println("ESP-NOW initialization failed");
     return;
   }
 
+  // Register callback for receiving data
   esp_now_register_recv_cb(OnDataRecv);
 }
 
 void loop() {
-  // No need to handle clients, as this is ESP-NOW communication
+  // Nothing to do here
 }

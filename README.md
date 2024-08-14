@@ -10,8 +10,8 @@
 2. installing usb connection between esp-32 and ubuntu 22.04 lts
 3. finished MAC address acquisition from esp board
 4. finished esp-now protocol check [codes folder](esp_now_ex)
-5. finished parts connection
-6. 
+5. finished parts connection design
+6. finished vue web page - esp board connection
 
 ## Hardships
 ### establishing USB connection on Ubuntu 22.04 lts
@@ -37,6 +37,15 @@
 
 ### pin I/O
 1. which pin should I use?
+
+### esp-now protocol
+1. had issue with parameter name of OnDataRecv [code](esp_now_ctrl/Firmware/receiver.ino)
+
+### webpage
+1. tried to use React.js but failed
+2. switched to vue.js
+3. need to study [javascript](https://developer.mozilla.org/ko/docs/Web/JavaScript/Language_overview)
+4. and [React.js](https://react.dev/learn/start-a-new-react-project)
 
 
 # from Home

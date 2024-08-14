@@ -1,78 +1,77 @@
-// 중계기 코드
 #include <WiFi.h>
 #include <esp_now.h>
+#include <WebServer.h>
 
 const char* ssid = "ecopeace";
 const char* password = "ecopeace123";
 
-// Define the MAC address of the second ESP32 (Receiver)
-uint8_t receiverMAC[] = {0xA0, 0xDD, 0x6C, 0x04, 0x46, 0x18}; // 리시버 맥주소
-
 WebServer server(80);
 
-void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
-  Serial.print("Last Packet Send Status:\t");
-  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+// Define the MAC address of the second ESP32 (Receiver)
+uint8_t receiverMACAddress[] = {0xA0, 0xDD, 0x6C, 0x04, 0x46, 0x18}; // Receiver MAC address
+
+void onDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+  Serial.print("Send status: ");
+  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Success" : "Fail");
+}
+
+void sendCommandToReceiver(const char* command) {
+  esp_now_send(receiverMACAddress, (const uint8_t*)command, strlen(command));
+}
+
+void handleLEDOn() {
+  sendCommandToReceiver("ON");
+  // Add CORS headers
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.send(200, "text/html", "<html><body><h1>Command Sent: LED ON</h1></body></html>");
+}
+
+void handleLEDOff() {
+  sendCommandToReceiver("OFF");
+  // Add CORS headers
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.send(200, "text/html", "<html><body><h1>Command Sent: LED OFF</h1></body></html>");
 }
 
 void setup() {
   Serial.begin(115200);
 
-  // Initialize WiFi
-  WiFi.mode(WIFI_STA);
-  WiFi.disconnect();
-  delay(1000);
+  // Connect to Wi-Fi
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("Connected to Wi-Fi");
 
   // Initialize ESP-NOW
   if (esp_now_init() != ESP_OK) {
-    Serial.println("ESP-NOW initialization failed.");
+    Serial.println("ESP-NOW initialization failed");
     return;
+  } else {
+    Serial.println("ESP-NOW initialized");
   }
 
-  esp_now_register_send_cb(OnDataSent);
+  // Register callback for sending data
+  esp_now_register_send_cb(onDataSent);
 
-  // Add the receiver peer
+  // Add receiver peer
   esp_now_peer_info_t peerInfo;
-  memcpy(peerInfo.peer_addr, receiverMAC, 6);
-  peerInfo.channel = 0;
+  memcpy(peerInfo.peer_addr, receiverMACAddress, 6);
+  peerInfo.channel = 0;  
   peerInfo.encrypt = false;
-
   if (esp_now_add_peer(&peerInfo) != ESP_OK) {
-    Serial.println("Failed to add peer.");
+    Serial.println("Failed to add peer");
     return;
   }
 
-  server.on("/", HTTP_GET, []() {
-    server.send(200, "text/html", 
-      "<html><body>"
-      "<h1>LED Control</h1>"
-      "<button onclick=\"location.href='/led/on'\">LED ON</button>"
-      "<button onclick=\"location.href='/led/off'\">LED OFF</button>"
-      "</body></html>");
-  });
-
-  server.on("/led/on", HTTP_GET, []() {
-    sendDataToReceiver("ON");
-    server.send(200, "text/html", "<html><body><h1>LED Command Sent: ON</h1></body></html>");
-  });
-
-  server.on("/led/off", HTTP_GET, []() {
-    sendDataToReceiver("OFF");
-    server.send(200, "text/html", "<html><body><h1>LED Command Sent: OFF</h1></body></html>");
-  });
+  // Handle requests
+  server.on("/led/on", HTTP_GET, handleLEDOn);
+  server.on("/led/off", HTTP_GET, handleLEDOff);
 
   server.begin();
 }
 
-void sendDataToReceiver(const String &message) {
-  esp_err_t result = esp_now_send(receiverMAC, (uint8_t *)message.c_str(), message.length());
-  if (result == ESP_OK) {
-    Serial.println("Send Success");
-  } else {
-    Serial.println("Send Error");
-  }
-}
-
 void loop() {
-  server.handleClient();
+  server.handleClient(); // Handle incoming client requests
 }
