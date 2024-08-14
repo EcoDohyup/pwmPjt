@@ -31,12 +31,14 @@
 1. [What is relay?](https://blog.naver.com/roboholic84/220460268471)
 2. maybe electromagnetic type?
 
-### lack of motor driver
+### lack of motor driver knowledge
 1. [모터드라이버 구동 예시](https://blog.naver.com/roboholic84/220460268471)
 2. [모터드라이버 원리](https://www.devicemart.co.kr/goods_process/get_html_to_string?url=/data/category/category_tech/00150002/00150002.html)
+3. [driver link](https://github.com/CytronTechnologies/CytronMotorDriver?tab=readme-ov-file)
 
 ### pin I/O
 1. which pin should I use?
+2. [datasheet](https://cdn-reichelt.de/documents/datenblatt/A300/SBC-NODEMCU-ESP32-DATASHEET_V1.2.pdf)
 
 ### esp-now protocol
 1. had issue with parameter name of OnDataRecv [code](esp_now_ctrl/Firmware/receiver.ino)
