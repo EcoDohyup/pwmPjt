@@ -10,6 +10,8 @@
 2. installing usb connection between esp-32 and ubuntu 22.04 lts
 3. finished MAC address acquisition from esp board
 4. finished esp-now protocol check [codes folder](esp_now_ex)
+5. finished parts connection
+6. 
 
 ## Hardships
 ### establishing USB connection on Ubuntu 22.04 lts
@@ -32,6 +34,10 @@
 ### lack of motor driver
 1. [모터드라이버 구동 예시](https://blog.naver.com/roboholic84/220460268471)
 2. [모터드라이버 원리](https://www.devicemart.co.kr/goods_process/get_html_to_string?url=/data/category/category_tech/00150002/00150002.html)
+
+### pin I/O
+1. which pin should I use?
+
 
 # from Home
 
