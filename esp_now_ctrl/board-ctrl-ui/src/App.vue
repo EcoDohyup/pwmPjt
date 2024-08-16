@@ -12,7 +12,7 @@ export default {
   methods: {
     async turnLEDOn() {
       try {
-        await fetch('http://192.168.1.105/led/on'); // coordinator board에 신호 보냄 
+        await fetch('http://192.168.0.238/led/on'); // coordinator board에 신호 보냄 
         // home, 1, 192.168.1.104
         // office, http://192.168.0.247
         console.log("LED ON")
@@ -22,7 +22,7 @@ export default {
     },
     async turnLEDOff() {
       try {
-        await fetch('http://192.168.1.105/led/off');
+        await fetch('http://192.168.0.238/led/off');
         console.log("LED OFF")
       } catch (error) {
         console.error('Error:', error);

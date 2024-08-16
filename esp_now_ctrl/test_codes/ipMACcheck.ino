@@ -22,6 +22,13 @@ void setup() {
   Serial.println("Connected to WiFi");
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
+
+  // Get the MAC Address
+  String macAddress = WiFi.macAddress();
+
+  // Print the MAC Address
+  Serial.print("ESP32 MAC Address: ");
+  Serial.println(macAddress);
 }
 
 void loop() {
