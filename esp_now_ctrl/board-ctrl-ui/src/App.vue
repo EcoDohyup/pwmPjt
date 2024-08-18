@@ -1,32 +1,39 @@
 <template>
   <div id="app">
-    <h1>ESP32 LED Control</h1>
+    <h1>ESP32 Control</h1>
     <button @click="turnLEDOn">LED On</button>
     <button @click="turnLEDOff">LED Off</button>
+    <div v-if="response">
+      <p>Server Response: {{ response }}</p>
+    </div>
   </div>
 </template>
 
 <script>
 export default {
   name: 'App',
+  data() {
+    return {
+      response: ''
+    }
+  },
   methods: {
-    async turnLEDOn() {
+    async sendCommand(command) {
       try {
-        await fetch('http://192.168.0.238/led/on'); // coordinator board에 신호 보냄 
-        // home, 1, 192.168.1.104
-        // office, http://192.168.0.247
-        console.log("LED ON")
+        // Ensure the URL matches the route defined in ESP32 code
+        const res = await fetch(`http://192.168.1.106/led/${command}`);
+        const text = await res.text();
+        this.response = text;
       } catch (error) {
         console.error('Error:', error);
+        this.response = 'Error sending command';
       }
     },
-    async turnLEDOff() {
-      try {
-        await fetch('http://192.168.0.238/led/off');
-        console.log("LED OFF")
-      } catch (error) {
-        console.error('Error:', error);
-      }
+    turnLEDOn() {
+      this.sendCommand('on');
+    },
+    turnLEDOff() {
+      this.sendCommand('off');
     }
   }
 }
