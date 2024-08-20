@@ -34,42 +34,49 @@ export default {
     }
   },
   methods: {
-    async sendSignal(command) {
-      try {
-        const response = await fetch(`http://192.168.0.230/relay/${command}`, {
-          method: 'GET'
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
+  async sendSignal(command) {
+    try {
+      const response = await fetch(`http://192.168.0.229/relay/${command}`, {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'text/plain'
         }
+      });
 
-        this.status = await response.text();
-      } catch (error) {
-        console.error('Error:', error);
-        this.status = `Error sending signal: ${error.message}`;
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
-    },
-    async sendSpeed() {
-      try {
-        const response = await fetch(`http://192.168.0.230/motor/speed/${this.speed}`, {
-          method: 'GET'
-        });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
+      this.status = await response.text();
+    } catch (error) {
+      console.error('Error:', error);
+      this.status = `Error sending signal: ${error.message}`;
+    }
+  },
+  async sendSpeed() {
+    try {
+      const response = await fetch(`http://192.168.0.229/motor/speed/${this.speed}`, {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'text/plain'
         }
+      });
 
-        this.status = await response.text();
-      } catch (error) {
-        console.error('Error:', error);
-        this.status = `Error setting speed: ${error.message}`;
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
-    },
-    updateSpeed() {
-      this.status = `Speed set to ${this.speed}`;
+
+      this.status = await response.text();
+    } catch (error) {
+      console.error('Error:', error);
+      this.status = `Error setting speed: ${error.message}`;
     }
   }
+}
+
+
 }
 </script>
 

@@ -40,6 +40,7 @@ void setup() {
 
   // Attempt to connect to Wi-Fi
   WiFi.begin(ssid, password);
+  WiFi.mode(WIFI_STA);
   int attempt = 0;
   while (WiFi.status() != WL_CONNECTED && attempt < 20) {  // Try for 10 seconds
     delay(500);
@@ -66,48 +67,47 @@ void setup() {
     if (esp_now_add_peer(&peerInfo) != ESP_OK) {
       Serial.println("Failed to add peer");
       return;
+    } else {
+      Serial.println("Peer added successfully");
     }
 
-    // Initialize Async Web Server routes
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send_P(200, "text/html", R"rawliteral(
-        <!DOCTYPE HTML><html>
-        <head><title>ESP32 Motor Control</title></head>
-        <body>
-          <h1>ESP32 Motor Control</h1>
-          <p><a href="/relay/on"><button>Relay On</button></a></p>
-          <p><a href="/relay/off"><button>Relay Off</button></a></p>
-          <p>Motor Speed: <span id="speedVal">0</span></p>
-          <input type="range" min="0" max="255" value="0" id="speedSlider" oninput="updateSpeed(this.value)">
-          <p><button onclick="sendSpeed()">Set Speed</button></p>
-          <script>
-            function updateSpeed(val) {
-              document.getElementById('speedVal').innerText = val;
-            }
-            function sendSpeed() {
-              var speed = document.getElementById('speedSlider').value;
-              fetch('/motor/speed/' + speed);
-            }
-          </script>
-        </body>
-        </html>
-      )rawliteral");
-    });
+    // Handle CORS for all endpoints
+    auto handleCORS = [](AsyncWebServerRequest *request) {
+      AsyncWebServerResponse *response = request->beginResponse(200);
+      response->addHeader("Access-Control-Allow-Origin", "*");
+      response->addHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+      response->addHeader("Access-Control-Allow-Headers", "Content-Type");
+      request->send(response);
+    };
 
+    // Handle preflight CORS requests (OPTIONS method)
+    server.on("/relay/on", HTTP_OPTIONS, handleCORS);
+    server.on("/relay/off", HTTP_OPTIONS, handleCORS);
+    server.on("/motor/speed/:value", HTTP_OPTIONS, handleCORS);
+
+    // Handle relay on
     server.on("/relay/on", HTTP_GET, [](AsyncWebServerRequest *request){
       sendData("/relay/on");  // Send relay on command to the slave
-      request->send(200, "text/plain", "Relay On");
+      AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "Relay On");
+      response->addHeader("Access-Control-Allow-Origin", "*");
+      request->send(response);
     });
 
+    // Handle relay off
     server.on("/relay/off", HTTP_GET, [](AsyncWebServerRequest *request){
       sendData("/relay/off");  // Send relay off command to the slave
-      request->send(200, "text/plain", "Relay Off");
+      AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "Relay Off");
+      response->addHeader("Access-Control-Allow-Origin", "*");
+      request->send(response);
     });
 
+    // Handle motor speed control
     server.on("/motor/speed/:value", HTTP_GET, [](AsyncWebServerRequest *request){
       String speedValue = request->getParam("value")->value();
       sendData("/motor/speed/" + speedValue);  // Send speed command to the slave
-      request->send(200, "text/plain", "Speed set to " + speedValue);
+      AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "Speed set to " + speedValue);
+      response->addHeader("Access-Control-Allow-Origin", "*");
+      request->send(response);
     });
 
     server.begin();

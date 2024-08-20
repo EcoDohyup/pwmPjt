@@ -8,9 +8,10 @@
 #define IN1_PIN 27
 #define IN2_PIN 26
 
-// Variable to store motor speed
+// Variable to store motor speed and state
 int motorSpeed = 0;
 bool relayState = false;
+uint8_t homeChannel = 0;  // Initialize the homeChannel
 
 // Initialize ESP-NOW
 void InitESPNow() {
@@ -25,7 +26,32 @@ void InitESPNow() {
 
 // Scan for the master's channel (if needed)
 void scanForHomeChannel() {
-  // This function is retained in case you need to scan for the master’s Wi-Fi channel.
+  int16_t scanResults = WiFi.scanNetworks();
+  Serial.println("");
+  if (scanResults == 0) {
+    Serial.println("No WiFi networks found");
+  } else {
+    Serial.print("Found "); Serial.print(scanResults); Serial.println(" networks");
+    for (int i = 0; i < scanResults; ++i) {
+      String SSID = WiFi.SSID(i);
+      uint8_t channel = WiFi.channel(i);
+
+      Serial.print(i + 1);
+      Serial.print(": ");
+      Serial.print(SSID);
+      Serial.print(" (Channel: ");
+      Serial.print(channel);
+      Serial.println(")");
+
+      if (SSID == "ecopeace") {  // Replace with your SSID
+        homeChannel = channel;
+        Serial.print("Home Channel found: ");
+        Serial.println(homeChannel);
+        break;
+      }
+    }
+  }
+  WiFi.scanDelete();
 }
 
 // Callback function when data is received from the master
@@ -51,11 +77,11 @@ void OnDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data, int dat
   // Process commands
   if (receivedData.indexOf("/relay/on") != -1) {
     relayState = true;
-    digitalWrite(RELAY_PIN, HIGH);  // Turn on relay
+    digitalWrite(RELAY_PIN, LOW);  // Turn on relay (active-low logic)
     Serial.println("Relay ON");
   } else if (receivedData.indexOf("/relay/off") != -1) {
     relayState = false;
-    digitalWrite(RELAY_PIN, LOW);  // Turn off relay
+    digitalWrite(RELAY_PIN, HIGH);  // Turn off relay (active-low logic)
     analogWrite(ENA_PIN, 0);  // Stop motor
     Serial.println("Relay OFF");
   } else if (receivedData.startsWith("/motor/speed/")) {
@@ -63,6 +89,12 @@ void OnDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data, int dat
       // Extract speed value from the command
       int speedIndex = receivedData.indexOf("/motor/speed/") + String("/motor/speed/").length();
       motorSpeed = receivedData.substring(speedIndex).toInt();
+
+      // Set motor direction (forward example)
+      digitalWrite(IN1_PIN, HIGH);
+      digitalWrite(IN2_PIN, LOW);
+
+      // Adjust the motor speed based on the PWM signal
       analogWrite(ENA_PIN, motorSpeed);  // Set motor speed
       Serial.println("Motor Speed set to " + String(motorSpeed));
     } else {
@@ -84,16 +116,20 @@ void setup() {
   pinMode(IN2_PIN, OUTPUT);
 
   // Turn off relay and motor initially
-  digitalWrite(RELAY_PIN, LOW);
+  digitalWrite(RELAY_PIN, HIGH);  // Relay off (active-low logic)
   analogWrite(ENA_PIN, 0);
   digitalWrite(IN1_PIN, LOW);
   digitalWrite(IN2_PIN, LOW);
 
   WiFi.mode(WIFI_STA);
-  // If needed, call scanForHomeChannel() here to set the correct channel.
+  scanForHomeChannel();  // Scan and set the correct Wi-Fi channel
 
-  // Set the home channel
-  esp_wifi_set_channel(homeChannel, WIFI_SECOND_CHAN_NONE);
+  if (homeChannel != 0) {
+    // Set the home channel
+    esp_wifi_set_channel(homeChannel, WIFI_SECOND_CHAN_NONE);
+  } else {
+    Serial.println("Failed to find home channel");
+  }
 
   // Print the MAC address of the slave
   Serial.print("STA MAC: ");
