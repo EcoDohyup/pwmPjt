@@ -27,6 +27,8 @@ void sendData(const String &data) {
   const char* dataStr = data.c_str();
   size_t dataSize = data.length() + 1;
   esp_err_t result = esp_now_send(slave_mac, (const uint8_t*)dataStr, dataSize);
+  Serial.print("Sending data : ");
+  Serial.println(dataStr);
 
   if (result == ESP_OK) {
     Serial.println("Send Success");
@@ -102,13 +104,20 @@ void setup() {
     });
 
     // Handle motor speed control
-    server.on("/motor/speed/:value", HTTP_GET, [](AsyncWebServerRequest *request){
-      String speedValue = request->getParam("value")->value();
-      sendData("/motor/speed/" + speedValue);  // Send speed command to the slave
-      AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "Speed set to " + speedValue);
-      response->addHeader("Access-Control-Allow-Origin", "*");
-      request->send(response);
+    server.on("/motor/speed", HTTP_GET, [](AsyncWebServerRequest *request){
+      if (request->hasParam("value")) {
+        String speedValue = request->getParam("value")->value();
+        sendData("/motor/speed/" + speedValue);  // Send speed command to the slave
+        AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "Speed set to " + speedValue);
+        response->addHeader("Access-Control-Allow-Origin", "*");
+        request->send(response);
+      } else {
+        AsyncWebServerResponse *response = request->beginResponse(400, "text/plain", "Invalid request");
+        response->addHeader("Access-Control-Allow-Origin", "*");
+        request->send(response);
+      }
     });
+
 
     server.begin();
   } else {

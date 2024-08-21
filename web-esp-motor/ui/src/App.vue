@@ -14,9 +14,11 @@
       <div class="motor-control">
         <h2>Motor Speed Control</h2>
         <p>Current Speed: <span>{{ speed }}</span></p>
-        <input type="range" min="0" max="255" v-model="speed" @input="updateSpeed">
-        <input type="number" v-model="speed" @input="updateSpeed" min="0" max="255">
+        <input type="range" min="140" max="225" step="1" v-model="speed" @input="updateSpeed">
+        <input type="number" min="140" max="225" v-model="speed" @input="updateSpeed">
         <p>
+          <button @click="setSpeed(0)">Stop</button>
+          <button @click="setSpeed(225)">Max Speed</button>
           <button @click="sendSpeed">Set Speed</button>
         </p>
       </div>
@@ -30,53 +32,65 @@ export default {
   data() {
     return {
       status: 'Waiting for command...', // Status message for relay control
-      speed: 0 // Motor speed value (0-255)
+      speed: 140 // Motor speed value (140-225), default to minimum
     }
   },
   methods: {
-  async sendSignal(command) {
-    try {
-      const response = await fetch(`http://192.168.0.229/relay/${command}`, {
-        method: 'GET',
-        mode: 'cors',
-        headers: {
-          'Content-Type': 'text/plain'
+    async sendSignal(command) {
+      try {
+        const response = await fetch(`http://192.168.0.229/relay/${command}`, {
+          method: 'GET',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'text/plain'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
         }
-      });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        this.status = await response.text();
+      } catch (error) {
+        console.error('Error:', error);
+        this.status = `Error sending signal: ${error.message}`;
       }
+    },
+    async sendSpeed() {
+      // Ensure the speed value is within the specified range
+      const clampedSpeed = Math.max(140, Math.min(225, this.speed));
+      
+      try {
+        const response = await fetch(`http://192.168.0.229/motor/speed?value=${clampedSpeed}`, {
+          method: 'GET',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'text/plain'
+          }
+        });
 
-      this.status = await response.text();
-    } catch (error) {
-      console.error('Error:', error);
-      this.status = `Error sending signal: ${error.message}`;
-    }
-  },
-  async sendSpeed() {
-    try {
-      const response = await fetch(`http://192.168.0.229/motor/speed/${this.speed}`, {
-        method: 'GET',
-        mode: 'cors',
-        headers: {
-          'Content-Type': 'text/plain'
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
         }
-      });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        this.status = await response.text();
+      } catch (error) {
+        console.error('Error:', error);
+        this.status = `Error setting speed: ${error.message}`;
       }
-
-      this.status = await response.text();
-    } catch (error) {
-      console.error('Error:', error);
-      this.status = `Error setting speed: ${error.message}`;
+    },
+    updateSpeed() {
+      // Ensure the speed value stays within the specified range
+      if (this.speed < 140) this.speed = 140;
+      if (this.speed > 225) this.speed = 225;
+    },
+    setSpeed(value) {
+      // Set the speed to the specified value and update the input controls
+      this.speed = value;
+      this.updateSpeed();
+      this.sendSpeed();
     }
   }
-}
-
-
 }
 </script>
 
@@ -96,7 +110,7 @@ p {
 }
 
 input[type="range"] {
-  width: 100%;
+  width: 80%; /* Adjust width as needed */
 }
 
 input[type="number"] {

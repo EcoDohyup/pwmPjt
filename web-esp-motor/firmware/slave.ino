@@ -8,6 +8,11 @@
 #define IN1_PIN 27
 #define IN2_PIN 26
 
+const int freq = 30000;
+const int pwmChannel = 0;
+const int resolution  = 8;
+int dutyCycle = 200;
+
 // Variable to store motor speed and state
 int motorSpeed = 0;
 bool relayState = false;
@@ -87,6 +92,7 @@ void OnDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data, int dat
   } else if (receivedData.startsWith("/motor/speed/")) {
     if (relayState) {
       // Extract speed value from the command
+      Serial.println("motor activated");
       int speedIndex = receivedData.indexOf("/motor/speed/") + String("/motor/speed/").length();
       motorSpeed = receivedData.substring(speedIndex).toInt();
 
@@ -95,7 +101,7 @@ void OnDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data, int dat
       digitalWrite(IN2_PIN, LOW);
 
       // Adjust the motor speed based on the PWM signal
-      analogWrite(ENA_PIN, motorSpeed);  // Set motor speed
+      ledcWrite(ENA_PIN, motorSpeed);  // Set motor speed
       Serial.println("Motor Speed set to " + String(motorSpeed));
     } else {
       Serial.println("Relay is OFF, can't set motor speed");
@@ -114,6 +120,9 @@ void setup() {
   pinMode(ENA_PIN, OUTPUT);
   pinMode(IN1_PIN, OUTPUT);
   pinMode(IN2_PIN, OUTPUT);
+
+  // configure LED PWM functionalities
+  ledcAttachChannel(ENA_PIN, freq, resolution, pwmChannel);
 
   // Turn off relay and motor initially
   digitalWrite(RELAY_PIN, HIGH);  // Relay off (active-low logic)
