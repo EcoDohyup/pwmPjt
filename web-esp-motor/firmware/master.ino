@@ -11,7 +11,7 @@ const char* password = "ecopeace123";
 AsyncWebServer server(80);
 
 // Slave's MAC address
-uint8_t slave_mac[] = {0xA0, 0xDD, 0x6C, 0x10, 0x4B, 0xCC};  // Replace with your slave's MAC address
+uint8_t slave_mac[] = {0xA0, 0xDD, 0x6C, 0x10, 0x64, 0x5C};  // Replace with your slave's MAC address
 
 void InitESPNow() {
   if (esp_now_init() == ESP_OK) {

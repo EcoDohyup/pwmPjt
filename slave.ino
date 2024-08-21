@@ -1,15 +1,17 @@
 #include <esp_now.h>
 #include <WiFi.h>
 #include <esp_wifi.h>
-#include <CytronMotorDriver.h>  // Include the Cytron Motor Driver library
 
-// Motor Driver configuration
-#define MOTOR_PWM_PIN 14  // PWM pin for controlling motor speed
-#define MOTOR_DIR_PIN 27  // Motor direction pin
-#define RELAY_PIN 16      // Define relay pin (if used)
+// Pin definitions for motor and relay
+#define RELAY_PIN 16
+#define ENA_PIN 14
+#define IN1_PIN 27
+#define IN2_PIN 26
 
-// Create an instance of the motor driver with correct mode
-CytronMD motor(PWM_DIR, MOTOR_PWM_PIN, MOTOR_DIR_PIN);
+const int freq = 30000;
+const int pwmChannel = 0;
+const int resolution  = 8;
+int dutyCycle = 200;
 
 // Variable to store motor speed and state
 int motorSpeed = 0;
@@ -85,20 +87,21 @@ void OnDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data, int dat
   } else if (receivedData.indexOf("/relay/off") != -1) {
     relayState = false;
     digitalWrite(RELAY_PIN, HIGH);  // Turn off relay (active-low logic)
-    motor.setSpeed(0);  // Stop motor using Cytron library
+    analogWrite(ENA_PIN, 0);  // Stop motor
     Serial.println("Relay OFF");
   } else if (receivedData.startsWith("/motor/speed/")) {
     if (relayState) {
       // Extract speed value from the command
-      Serial.println("Motor activated");
-      int valueIndex = receivedData.indexOf("/motor/speed/") + String("/motor/speed/").length();
-      motorSpeed = receivedData.substring(valueIndex).toInt();
+      Serial.println("motor activated");
+      int speedIndex = receivedData.indexOf("/motor/speed/") + String("/motor/speed/").length();
+      motorSpeed = receivedData.substring(speedIndex).toInt();
 
-      // Constrain speed value based on the desired range (0-255)
-      //motorSpeed = constrain(motorSpeed, 0, 255);
+      // Set motor direction (forward example)
+      digitalWrite(IN1_PIN, HIGH);
+      digitalWrite(IN2_PIN, LOW);
 
-      // Set motor speed using Cytron library
-      motor.setSpeed(motorSpeed); // Directly set speed (positive for forward direction)
+      // Adjust the motor speed based on the PWM signal
+      ledcWrite(ENA_PIN, motorSpeed);  // Set motor speed
       Serial.println("Motor Speed set to " + String(motorSpeed));
     } else {
       Serial.println("Relay is OFF, can't set motor speed");
@@ -114,10 +117,18 @@ void setup() {
 
   // Set GPIO pins as outputs
   pinMode(RELAY_PIN, OUTPUT);
+  pinMode(ENA_PIN, OUTPUT);
+  pinMode(IN1_PIN, OUTPUT);
+  pinMode(IN2_PIN, OUTPUT);
+
+  // configure LED PWM functionalities
+  ledcAttachChannel(ENA_PIN, freq, resolution, pwmChannel);
 
   // Turn off relay and motor initially
   digitalWrite(RELAY_PIN, HIGH);  // Relay off (active-low logic)
-  motor.setSpeed(0);  // Stop motor initially
+  analogWrite(ENA_PIN, 0);
+  digitalWrite(IN1_PIN, LOW);
+  digitalWrite(IN2_PIN, LOW);
 
   WiFi.mode(WIFI_STA);
   scanForHomeChannel();  // Scan and set the correct Wi-Fi channel

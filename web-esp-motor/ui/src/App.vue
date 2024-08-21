@@ -17,7 +17,7 @@
         <input type="range" min="140" max="225" step="1" v-model="speed" @input="updateSpeed">
         <input type="number" min="140" max="225" v-model="speed" @input="updateSpeed">
         <p>
-          <button @click="setSpeed(0)">Stop</button>
+          <button @click="stopMotor">Stop</button>
           <button @click="setSpeed(225)">Max Speed</button>
           <button @click="sendSpeed">Set Speed</button>
         </p>
@@ -79,8 +79,22 @@ export default {
         this.status = `Error setting speed: ${error.message}`;
       }
     },
+    async stopMotor() {
+      this.speed = 0;
+      try {
+        const response = await fetch('http://192.168.0.229/motor/speed?value=0', {
+          method: 'GET',
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+      } catch (error) {
+        console.error('Error stopping motor:', error);
+      }
+    },
     updateSpeed() {
       // Ensure the speed value stays within the specified range
+      if (this.speed == 0) this.speed == 0;
       if (this.speed < 140) this.speed = 140;
       if (this.speed > 225) this.speed = 225;
     },
